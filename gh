@@ -1,6 +1,4 @@
 #!/bin/bash
-git pull
-git merge
 git add .
 git commit -m"elo updates from Tim"
 git push origin
