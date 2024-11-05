@@ -1,4 +1,5 @@
 const NewProduct = require('../models/newproductModel');
+
 const { v4: uuidv4 } = require('uuid');
 const { bucket } = require('../config/firebase');
 const path = require('path');
@@ -94,3 +95,6 @@ exports.deleteNewProduct = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+

@@ -82,6 +82,21 @@ const OrderingPage = () => {
     setSelectedArea(e.target.value);
   };
 
+  const handleClearCart = async () => {
+    try {
+      setMessage('');
+      setError('');
+      const clearResponse = await axios.post('https://elosystemv1.onrender.com/api/cart/cart/clear', 
+        { username }
+      );
+      setMessage(clearResponse.data.message);
+      setCart([]); // Clear the cart
+    } catch (err) {
+      console.error('Failed to clear cart:', err);
+      setError(err.response?.data?.message || 'Failed to clear cart');
+    }
+  };
+
   const handleSubmitOrder = async () => {
     if (!paymentMethod || !selectedTown || !selectedArea || (paymentMethod === 'mpesa' && !mpesaPhoneNumber)) {
       setError('Please select a payment method, provide a delivery destination, and enter M-Pesa phone number if applicable.');
@@ -113,27 +128,35 @@ const OrderingPage = () => {
       const response = await axios.post('https://elosystemv1.onrender.com/api/orders', orderDetails);
       setMessage(response.data.message);
 
-      if (paymentMethod === 'mpesa') {
-        const payload = {
-          phone: mpesaPhoneNumber,
-          amount: totalPrice.toFixed(0),
-          orderReference: orderReference
-      };
+      if (paymentMethod === 'mpesa') 
+        {
+            const payload = 
+            {
+                phone: mpesaPhoneNumber,
+                amount: totalPrice.toFixed(0),
+                orderReference: orderReference
+            };
 
-      try {
-          const response = await axios.post('https://elosystemv1.onrender.com/api/mpesa/lipa', payload, {
-              headers: {
-                  'Content-Type': 'application/json'
-              }
-          });
-          setMessage('Payment initiated successfully!');
-          console.log(response.data);
-          console.log(response.data.CheckoutRequestID);
-
-      } catch (error) {
-          setMessage('Payment initiation failed: ' + (error.response ? error.response.data.message : error.message));
-          console.error('Error:', error);
-      }
+            try {
+                const response = await axios.post('https://elosystemv1.onrender.com/api/mpesa/lipa', payload, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                setMessage('Payment initiated successfully!');
+                handleClearCart();
+                setTimeout(() => {
+                  navigate('/salespersonhome');
+                }, 3000);
+            } catch (error) {
+                setMessage('Payment initiation failed: ' + (error.response ? error.response.data.message : error.message));
+                console.error('Error:', error);
+            }
+      }else{
+        await handleClearCart();
+        setTimeout(() => {
+          navigate('/salespersonhome');
+        }, 3000);
       }
 
       // Send order details to the logistics system
